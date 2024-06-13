@@ -29,7 +29,7 @@ const App = () => {
             <h3>Room No: {room.room_no}</h3>
             <p>Type: {room.room_type}</p>
             <p>Rate: {room.rate}</p>
-          </li>
+          </li>n
         ))}
       </ul>
     </div>
