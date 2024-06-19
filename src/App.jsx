@@ -24,13 +24,17 @@ const App = () => {
       <h1>CYF Hotel</h1>
       <h2>Rooms</h2>
       <ul className="room-list">
-        {rooms.map((room) => (
-          <li key={`${room.room_no}-${room.room_type}`} className="room-item">
-            <h3>Room No: {room.room_no}</h3>
-            <p>Type: {room.room_type}</p>
-            <p>Rate: {room.rate}</p>
-          </li>n
-        ))}
+        {rooms.length > 0 ? (
+          rooms.map((room) => (
+            <li key={`${room.room_no}-${room.room_type}`} className="room-item">
+              <h3>Room No: {room.room_no}</h3>
+              <p>Type: {room.room_type}</p>
+              <p>Rate: {room.rate}</p>
+            </li>
+          ))
+        ) : (
+          <li>No rooms available</li>
+        )}
       </ul>
     </div>
   );
