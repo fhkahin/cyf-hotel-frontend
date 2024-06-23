@@ -1,34 +1,39 @@
-version: 0.2
+name: frontend s3 deployment
 
-phases:
-  install:
-    commands:
-      - echo "Installing nvm..."
-      - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-      - export NVM_DIR="$HOME/.nvm"
-      - [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-      - [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-      - echo "Installing Node.js v20.12.2..."
-      - nvm install 20.12.2
-      - nvm use 20.12.2
-      - nvm alias default 20.12.2
-      - echo "Installing dependencies..."
-      - npm ci
+on:
+  push:
+    branches: ["main"]
+
+jobs:
   build:
-    commands:
-      - echo "Running tests..."
-      - npm test
-      - echo "Building the project..."
-      - npm run build
-  post_build:
-    commands:
-      - echo "Build completed successfully!"
-artifacts:
-  files:
-    - '**/*'
-    - 'build/**/*'
-  base-directory: 'build'
-  discard-paths: yes
-cache:
-  paths:
-    - 'node_modules/**/*'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.12.2' # Specify your Node.js version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static files
+        run: npm run build
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Deploy to S3
+        env:
+          S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws s3 rm s3://${S3_BUCKET} --recursive
+          aws s3 sync build/ s3://${S3_BUCKET} --delete
